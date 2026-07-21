@@ -221,6 +221,10 @@ max-nested-blocks = 4  # default: 5
 # cross-presenter closure it defines counts as one mccabe branch.
 "src/pomodoro/main.py" = ["PLR0914", "PLR0915", "C901"]
 
+# Qt virtual method overrides (paintEvent, mousePressEvent, rowCount, data, ...)
+# use Qt's camelCase convention rather than PEP 8 snake_case, per AGENTS.md §16.6.
+"src/pomodoro/views/**" = ["N802"]
+
 # -----------------------------------------------------------------------------
 # Basedpyright — Static Type Checking
 # -----------------------------------------------------------------------------

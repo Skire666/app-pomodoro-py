@@ -1,0 +1,252 @@
+# Spécification
+
+L'application est un pomodoro avec une gestion de liste TODO.
+
+---
+
+## 1. Structure générale de la fenêtre
+
+Pas de multi-fenêtrage.
+- **Barre du haut** : recherche instantanée (filtre la liste en live sur le nom),
+  bouton `+ Nouveau`.
+- **Colonne gauche** : navigation (Pomodoros / Historique) + liste des
+  pomodoros, avec toggle `Favoris uniquement`.
+- **Zone principale** : change de contenu selon le contexte (détail, édition,
+  session active, historique).
+
+---
+
+## 2. Écrans détaillés
+
+### 2.1 Liste des pomodoros (colonne gauche)
+
+Chaque ligne de la liste est une **carte compacte** :
+
+- `★/☆` : toggle favori en un clic (pas de confirmation, action instantanée).
+- Icône son : indique qu'un son est associé ; grisée si aucun son configuré.
+- Actions rapides visibles **au survol** (desktop-first) : `▶ Démarrer`,
+  `✎ Modifier`, `⧉ Dupliquer`, `X Supprimer`.
+- Tri par défaut : favoris en premier, puis ordre alphabétique.
+  Un sélecteur de tri (`Nom`, `Durée`, `Dernière utilisation`) est disponible
+  en haut de liste.
+- Clic simple sur la carte → sélectionne et affiche le détail dans la zone
+  principale (pas d'édition directe).
+
+**État vide** : si aucun pomodoro n'existe, la liste affiche un message
+`Aucun pomodoro pour l'instant` + bouton `+ Créer mon premier pomodoro`.
+
+### 2.2 Détail d'un pomodoro (zone principale, état par défaut au clic)
+
+Vue en lecture seule avec deux onglets :
+
+```
+┌─────────────────────────────────────────────┐
+│  Sprint deep work                     ★  ✎ │
+│  Durée : 00:25:00                           │
+│  Son : son_cloche.mp3 — Volume 80% — x3 rép.│
+│                                             │
+│  [ Général ]  [ TODO (4) ]                  │
+│  ───────────────────────────────────        │
+│                    ▶ Démarrer               │
+└─────────────────────────────────────────────┘
+```
+
+- Onglet `Général` : récapitulatif lecture seule des réglages.
+- Onglet `TODO (n)` : la liste TODO associée (voir §2.5), `n` = nombre
+  d'items non annulés.
+- Bouton `✎` en haut à droite → bascule vers le formulaire d'édition (§2.3)
+  sans changer d'écran (édition inline dans la même zone).
+- Bouton principal `▶ Démarrer` → lance la session (§2.4).
+
+### 2.3 Formulaire création/édition
+
+Remplace la zone principale (pas de modale, pour rester cohérent avec la
+sauvegarde temps réel — une modale suggérerait un "annuler" qui n'existe pas
+ici).
+
+```
+┌─────────────────────────────────────────────┐
+│  Nom du pomodoro                             │
+│  [ Sprint deep work                       ]  │
+│                                               │
+│  Durée        [ 00 ] h  [ 25 ] m  [ 00 ] s   │
+│                                               │
+│  Son                                         │
+│  [ son_cloche.mp3 ▾ ]  [Parcourir] [▶ Tester]│
+│  Volume        ────●───────────  80%         │
+│  Répétitions   [ 3 ] fois, toutes les [10]s  │
+│                                               │
+│  ☆ Marquer en favori                         │
+│                                               │
+│                    ✓ Enregistré automatiquement │
+└─────────────────────────────────────────────┘
+```
+
+**Comportements** :
+
+- **Sauvegarde en temps réel** : chaque champ déclenche un `debounce` de
+  ~200 ms après la dernière frappe, puis écriture immédiate dans
+  `config-pomodoro.json`. Un indicateur discret `✓ Enregistré` s'affiche
+  brièvement (3 s) après chaque écriture réussie.
+- **Validation live**, sans bloquer la saisie :
+  - Nom vide → bordure rouge + message `Le nom est requis` ; tant que non
+    corrigé, le pomodoro n'apparaît pas encore dans la liste (création
+    différée jusqu'à un nom valide) **[Hypothèse]**.
+  - Durée totale = `00:00:00` → message `La durée doit être supérieure à 0` ;
+    pas de sauvegarde tant que non corrigée.
+- **Sélecteur de son** : combo listant les sons déjà utilisés ailleurs +
+  bouton `Parcourir` (dialogue fichier natif, filtré `.mp3 / .wav / .ogg`) +
+  bouton `▶ Tester` qui joue un extrait au volume réglé, sans attendre la fin
+  du pomodoro.
+- **Aucun son sélectionné** : autorisé. Un message discret
+  `Aucun son — la fin du pomodoro sera silencieuse` s'affiche.
+- Pas de bouton `Enregistrer` / `Annuler` : la sauvegarde continue étant
+  automatique, seul un bouton `Fermer` ramène à la vue détail (§2.2).
+
+### 2.4 Session active (décompte en cours)
+
+```
+┌─────────────────────────────────────────────┐
+│              Sprint deep work                │
+│                                               │
+│                 ╭───────╮                    │
+│                 │ 18:42 │   ← anneau de      │
+│                 ╰───────╯     progression    │
+│                                               │
+│         [ ⏸ Pause ]   [ ⏹ Arrêter ]          │
+│                                               │
+│  TODO en cours                               │
+│  ☐ Écrire le brief                           │
+│  ☑ Relire specs                              │
+│  ☐ Préparer démo                             │
+└─────────────────────────────────────────────┘
+```
+
+- Timer visuel : affichage numérique
+  `MM:SS` (ou `HH:MM:SS` si ≥ 1h). Se met à jour chaque seconde.
+- `⏸ Pause` → fige le décompte, bouton devient `▶ Reprendre`.
+- `⏹ Arrêter` → demande confirmation `Arrêter cette session avant la fin ?
+  (Oui / Non)`. Si oui : session enregistrée en historique avec statut
+  `Interrompu`, retour à la vue détail (§2.2), **aucun son ne se déclenche**.
+- La liste TODO associée reste **interactive pendant la session** : on peut
+  cocher/changer l'état des items sans quitter le décompte.
+- **Un seul pomodoro actif à la fois** : si l'utilisateur clique
+  `▶ Démarrer` sur un autre pomodoro pendant une session active, une boîte de
+  dialogue propose `Un pomodoro est en cours ("Sprint deep work"). L'arrêter
+  et démarrer celui-ci ? (Oui / Non)`.
+- **Fin naturelle (00:00:00 atteint)** :
+  1. Le son configuré se joue (volume + nombre de répétitions + intervalle).
+  2. Une notification système/fenêtre apparaît : `✅ Pomodoro terminé — Sprint
+     deep work`.
+  3. La session est enregistrée en historique avec statut `Terminé`.
+  4. L'écran bascule sur un état `Terminé ✓` avec deux actions :
+     `Relancer` (redémarre le même pomodoro) et `Retour à la liste`.
+  5. Si l'app est **minimisée ou en arrière-plan**, le son joue quand même et
+     une notification desktop (system tray) est envoyée **[Hypothèse]**.
+
+### 2.5 Liste TODO associée
+
+```
+┌─────────────────────────────────────────────┐
+│  TODO (4)                                    │
+│  ┌───────────────────────────────────────┐  │
+│  │ ● Écrire le brief          [En cours ▾]│  │
+│  │ ✓ Relire specs              [Terminé ▾]│  │
+│  │ ○ Préparer démo             [À faire ▾]│  │
+│  │ ✕ Ancien point               [Annulé ▾]│  │
+│  └───────────────────────────────────────┘  │
+│  [+ Ajouter une ligne]                       │
+│                                               │
+│                     [X Supprimer la liste]  │
+└─────────────────────────────────────────────┘
+```
+
+- Code couleur des états **[Hypothèse]** : gris = `À faire`, bleu = `En
+  cours`, vert = `Terminé`, rouge barré = `Annulé`.
+- État initial d'un nouvel item : `À faire`.
+- **Ajouter une ligne** : clic sur `+ Ajouter une ligne` → insère une ligne en
+  mode édition immédiate (champ texte focus), `Entrée` valide et sauvegarde,
+  `Échap` annule (supprime la ligne vide).
+- **Modifier** : double-clic sur le libellé → édition inline, `Entrée` pour
+  valider, sauvegarde immédiate.
+- **Dupliquer** : icône sur hover → crée une copie juste en dessous, libellé
+  suffixé `(copie)`, état remis à `À faire`.
+- **Supprimer une ligne** : icône `X` sur hover → suppression directe, **sans
+  confirmation** (action réversible via un toast `Ligne supprimée — Annuler`
+  affiché 5 s) **[Hypothèse — évite la friction sur une action fréquente]**.
+- **Changer l'état** : menu déroulant par ligne (`À faire`, `En cours`,
+  `Terminé`, `Annulé`), sauvegarde immédiate, l'item passe en historique TODO
+  à chaque changement.
+- **Supprimer la liste** : action destructive → **confirmation obligatoire**
+  `Supprimer définitivement les 4 lignes de cette liste ? (Oui / Non)`.
+
+### 2.6 Historique
+
+Deux sous-onglets accessibles depuis la navigation latérale :
+
+**Historique Pomodoro**
+
+| Nom | Date | Durée prévue | Statut |
+|---|---|---|---|---|
+| Sprint deep work | 21/07 14:02 | 25:00 | ✅ Terminé |
+| Pause café | 21/07 13:10 | 05:00 | ⏹ Interrompu |
+
+- Tri par défaut : plus récent en premier.
+- Si le pomodoro source a été supprimé depuis, le nom affiché est conservé
+  tel quel dans l'historique (snapshot au moment de l'exécution), avec un
+  badge `(supprimé)` **[Hypothèse]**.
+- Purge silencieuse au-delà de 100 entrées (FIFO), aucune action utilisateur
+  requise.
+- Lecture seule, pas d'édition ni de suppression manuelle.
+
+**Historique TODO**
+
+| Libellé | Pomodoro associé | Ancien état → Nouvel état | Date |
+|---|---|---|---|
+| Relire specs | Sprint deep work | En cours → Terminé | 21/07 14:20 |
+
+- Une ligne d'historique par **changement d'état** (pas par item créé)
+- Purge silencieuse au-delà de 1000 entrées (FIFO).
+
+---
+
+## 3. Comportements transverses
+
+### 3.1 Sauvegarde temps réel
+
+- Toute mutation (CRUD pomodoro, CRUD TODO, changement d'état, favori,
+  fin/interruption de session) déclenche une écriture immédiate ou
+  quasi-immédiate (debounce 400 ms pour les champs texte/slider afin d'éviter
+  une écriture disque par caractère tapé).
+- Écriture **atomique** : écriture dans `config-pomodoro.json.tmp` puis
+  renommage, pour éviter une corruption en cas de crash pendant l'écriture.
+- Aucun bouton "Enregistrer" global dans l'app — c'est un principe UX
+  constant sur tout le produit.
+
+### 3.2 Notifications
+
+- Fin de pomodoro : notification desktop native (si OS le permet) +
+  changement visuel dans l'app + son.
+- Suppression de ligne TODO : toast furtif avec `Annuler` (5 s).
+- Erreur (ex. fichier son introuvable) : toast d'avertissement, non bloquant.
+
+### 3.3 Raccourcis clavier
+
+| Raccourci | Action |
+|---|---|
+| `Ctrl+N` | Nouveau pomodoro |
+| `Espace` | Pause / Reprendre (si session active) |
+| `Suppr` | Supprimer l'élément sélectionné (avec confirmation si destructif) |
+| `Ctrl+F` | Focus sur la barre de recherche |
+
+### 3.4 Cas limites
+
+- **Fichier son manquant au runtime** : lecture silencieuse + toast
+  `Son introuvable, lecture silencieuse`. Le champ son reste affiché tel
+  quel dans le formulaire (pas de reset automatique).
+- **Suppression d'un pomodoro en session active** : action bloquée, message
+  `Arrêtez la session en cours avant de supprimer ce pomodoro`.
+- **Suppression d'un pomodoro ayant une liste TODO non vide** : confirmation
+  renforcée précisant le nombre de lignes qui seront supprimées avec.
+- **Fermeture de l'application pendant une session active** : au prochain
+  lancement, proposer de reprendre ou d'annuler la session interrompue
