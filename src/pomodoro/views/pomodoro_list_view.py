@@ -128,10 +128,7 @@ class PomodoroListView(QWidget):
 
     def snapshot(self) -> PomodoroListViewState:
         """Return the current search/sort controls."""
-        return PomodoroListViewState(
-            search_text=self._search_edit.text(),
-            sort_mode=self._current_sort_mode(),
-        )
+        return PomodoroListViewState(search_text=self._search_edit.text(), sort_mode=self._current_sort_mode())
 
     def _current_sort_mode(self) -> PomodoroSortModeEnum:
         """Resolve the sort combo's current selection to a `PomodoroSortModeEnum`."""
@@ -162,6 +159,7 @@ class PomodoroListView(QWidget):
         self._cards_container.setVisible(not is_empty)
         for row in context:
             self._add_card(row)
+        self._cards_layout.addStretch(1)
 
     def _add_card(self, row: PomodoroRowState) -> None:
         """Create one card for `row` and wire its signals to the registered callbacks."""
@@ -172,9 +170,21 @@ class PomodoroListView(QWidget):
             card.edit_clicked.connect(self._on_item_edit_clicked)
         if self._on_item_duplicate_clicked is not None:
             card.duplicate_clicked.connect(self._on_item_duplicate_clicked)
-        if self._on_item_delete_clicked is not None:
-            card.delete_clicked.connect(self._on_item_delete_clicked)
+        card.delete_clicked.connect(
+            lambda id_pomodoro, name=row.name: self._handle_item_delete_clicked(id_pomodoro, name)
+        )
         self._cards_layout.addWidget(card)
+
+    def _handle_item_delete_clicked(self, id_pomodoro: str, name: str) -> None:
+        """Confirm, then forward a card's 'Del.' action (obligatory confirmation).
+
+        Deletion is offered no matter the pomodoro's session state (running,
+        paused, or stopped): only the user's yes/no answer decides.
+        """
+        message = i18n_fra.LIST_DELETE_CONFIRM_TEMPLATE.format(name=name)
+        answer = QMessageBox.question(self, i18n_fra.DIALOG_CONFIRM_TITLE, message)
+        if answer == QMessageBox.StandardButton.Yes and self._on_item_delete_clicked is not None:
+            self._on_item_delete_clicked(id_pomodoro)
 
     def _clear_cards(self) -> None:
         """Remove and schedule deletion of every currently displayed card."""

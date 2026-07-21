@@ -63,20 +63,6 @@ def test_duplicate_creates_a_copy_with_a_new_identity(config_repository: FakeCon
     assert len(AppConfigModel.instance().pomodoros) == 2
 
 
-def test_delete_is_blocked_while_a_session_is_active(config_repository: FakeConfigRepository) -> None:
-    service = PomodoroService(config_repository)
-    pomodoro = PomodoroModel.get_default()
-    pomodoro.id_pomodoro = service.generate_id()
-    pomodoro.name = "Sprint deep work"
-    service.save(pomodoro)
-
-    result = service.delete(pomodoro.id_pomodoro, has_active_session=True)
-
-    assert result.is_valid is False
-    assert result.error_code is ErrorCodePomodoro.POM_1003
-    assert service.get(pomodoro.id_pomodoro) is not None
-
-
 def test_delete_removes_the_pomodoro_and_its_todo_items(config_repository: FakeConfigRepository) -> None:
     service = PomodoroService(config_repository)
     pomodoro = PomodoroModel.get_default()
@@ -85,7 +71,7 @@ def test_delete_removes_the_pomodoro_and_its_todo_items(config_repository: FakeC
     service.save(pomodoro)
     AppConfigModel.instance().todos.create(_todo_for(pomodoro.id_pomodoro))
 
-    result = service.delete(pomodoro.id_pomodoro, has_active_session=False)
+    result = service.delete(pomodoro.id_pomodoro)
 
     assert result.is_valid is True
     assert service.get(pomodoro.id_pomodoro) is None

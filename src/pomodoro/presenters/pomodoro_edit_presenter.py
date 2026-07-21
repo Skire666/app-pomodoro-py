@@ -7,13 +7,17 @@
 import logging
 import time
 from collections.abc import Callable
+from typing import Final
 
 from pomodoro.interfaces.i_pomodoro_edit_view import IPomodoroEditView
 from pomodoro.interfaces.i_pomodoro_service import IPomodoroService
 from pomodoro.interfaces.i_sound_service import ISoundService
 from pomodoro.models.pomodoro_model import PomodoroModel
+from pomodoro.shared import i18n_fra
 from pomodoro.shared.errors.app_error import ErrorCodeApp
 from pomodoro.shared.validation_result import ValidationResult
+
+DEFAULT_NEW_POMODORO_DURATION_SECONDS: Final[int] = 5 * 60
 
 
 class PomodoroEditPresenter:
@@ -51,10 +55,17 @@ class PomodoroEditPresenter:
         self._view.notify_refresh(pomodoro)
 
     def start_create(self) -> None:
-        """Load a fresh, unsaved pomodoro into the form (spec §2.1 '+ Nouveau')."""
+        """Load a fresh, unsaved pomodoro into the form (spec §2.1 '+ Nouveau').
+
+        Pre-fills the name and duration with sensible defaults rather than
+        leaving them empty, so a brand-new pomodoro is already valid.
+        """
         self._id_pomodoro = self._pomodoro_service.generate_id()
         self._view.clear()
-        self._view.notify_refresh(PomodoroModel.get_default())
+        pomodoro = PomodoroModel.get_default()
+        pomodoro.name = i18n_fra.FORM_DEFAULT_NAME
+        pomodoro.duration_seconds = DEFAULT_NEW_POMODORO_DURATION_SECONDS
+        self._view.notify_refresh(pomodoro)
 
     def _build_pomodoro(self, id_pomodoro: str) -> PomodoroModel:
         """Build a pomodoro from the view's current fields, preserving other state."""

@@ -49,14 +49,14 @@ class IActiveSessionView(Protocol):
         """Update the countdown display for one second of elapsed time."""
         ...
 
-    def notify_completed(self, name: str) -> None:
-        """Switch to the 'Terminé ✓' state for the completed pomodoro `name`."""
-        ...
-
     def play_completion_sound(
         self, sound_path: str, volume: int, repeat_count: int, repeat_interval_seconds: int
     ) -> None:
         """Play the configured completion sound, repeated per the pomodoro's settings."""
+        ...
+
+    def stop_completion_sound(self) -> None:
+        """Silence the completion alarm immediately and cancel any pending repetition."""
         ...
 
     def bind_tick_requested(self, callback: Callable[[], None]) -> None:
@@ -77,14 +77,6 @@ class IActiveSessionView(Protocol):
 
     def bind_reset_clicked(self, callback: Callable[[], None]) -> None:
         """Register the callback fired when '⟲ Reset' is clicked."""
-        ...
-
-    def bind_restart_clicked(self, callback: Callable[[], None]) -> None:
-        """Register the callback fired when 'Relancer' is clicked."""
-        ...
-
-    def bind_back_to_list_clicked(self, callback: Callable[[], None]) -> None:
-        """Register the callback fired when 'Retour à la liste' is clicked."""
         ...
 
 

@@ -20,25 +20,15 @@ from pomodoro.shared.validation_result import ValidationResult
 class PomodoroListPresenter:
     """Wires `IPomodoroListView` callbacks to `IPomodoroService` (spec §2.1)."""
 
-    def __init__(
-        self,
-        view: IPomodoroListView,
-        pomodoro_service: IPomodoroService,
-        is_session_active_for: Callable[[str], bool] = lambda _id_pomodoro: False,
-    ) -> None:
+    def __init__(self, view: IPomodoroListView, pomodoro_service: IPomodoroService) -> None:
         """Wire the view's callbacks and keep the injected collaborators.
 
         Args:
             view: The pomodoro list view to orchestrate.
             pomodoro_service: Business logic for pomodoro definitions.
-            is_session_active_for: Predicate telling whether a session is
-                currently running for a given pomodoro id (spec §3.4);
-                defaults to "never active" until the session feature wires
-                the real answer through the composition root.
         """
         self._view = view
         self._pomodoro_service = pomodoro_service
-        self._is_session_active_for = is_session_active_for
         self._logger = logging.getLogger(self.__class__.__name__)
         self._on_start_requested: Callable[[str], None] | None = None
         self._on_edit_requested: Callable[[str], None] | None = None
@@ -78,9 +68,7 @@ class PomodoroListPresenter:
         """Convert domain models into read-only row states for the view."""
         return tuple(
             PomodoroRowState(
-                id_pomodoro=pomodoro.id_pomodoro,
-                name=pomodoro.name,
-                duration_seconds=pomodoro.duration_seconds,
+                id_pomodoro=pomodoro.id_pomodoro, name=pomodoro.name, duration_seconds=pomodoro.duration_seconds
             )
             for pomodoro in pomodoros
         )
@@ -120,13 +108,12 @@ class PomodoroListPresenter:
         return ValidationResult.ok()
 
     def _handle_item_delete_clicked(self, id_pomodoro: str) -> None:
-        """Delete a pomodoro, honoring the active-session guard (spec §3.4)."""
-        active = self._is_session_active_for(id_pomodoro)
+        """Delete a pomodoro, regardless of any session state (spec §3.4).
 
-        def _delete() -> ValidationResult:
-            return self._pomodoro_service.delete(id_pomodoro, has_active_session=active)
-
-        self._run_action("supprimer", _delete)
+        The view already obtained the user's yes/no confirmation before
+        forwarding this click.
+        """
+        self._run_action("supprimer", lambda: self._pomodoro_service.delete(id_pomodoro))
 
     def _run_action(self, action_name: str, action: Callable[[], ValidationResult]) -> None:
         """Time, execute, and report the outcome of one user-triggered action."""

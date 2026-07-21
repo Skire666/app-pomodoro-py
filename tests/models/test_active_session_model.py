@@ -26,12 +26,12 @@ def test_remaining_seconds_decreases_as_time_passes_while_running() -> None:
     assert remaining == 1400
 
 
-def test_remaining_seconds_floors_at_zero_past_completion() -> None:
+def test_remaining_seconds_goes_negative_past_completion() -> None:
     session = _make_session(planned_duration_seconds=60)
 
     remaining = session.remaining_seconds(_BASE_TIME + timedelta(seconds=200))
 
-    assert remaining == 0
+    assert remaining == -140
 
 
 def test_is_complete_becomes_true_once_the_planned_duration_elapses() -> None:

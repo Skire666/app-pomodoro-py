@@ -16,8 +16,8 @@ from pomodoro.shared.enums.copy_mode_enum import CopyModeEnum
 from pomodoro.shared.validation_result import ValidationResult
 
 SINGLETON_ID: Final[str] = "APP_CONFIG"
-MAX_POMODORO_HISTORY_ENTRIES: Final[int] = 100
-MAX_TODO_HISTORY_ENTRIES: Final[int] = 1000
+MAX_POMODORO_HISTORY_ENTRIES: Final[int] = 20
+MAX_TODO_HISTORY_ENTRIES: Final[int] = 100
 
 
 class AppConfigModel:
@@ -235,9 +235,8 @@ class AppConfigModel:
         cloned_pomodoro_history = self._pomodoro_history.copy(mode)
         cloned_todo_history = self._todo_history.copy(mode)
         cloned_active_session = self._active_session.copy(mode) if self._active_session is not None else None
-        timestamps = (datetime.now(UTC),) * 2 if mode is CopyModeEnum.E_BUSINESS else (
-            self._created_at,
-            self._modified_at,
+        timestamps = (
+            (datetime.now(UTC),) * 2 if mode is CopyModeEnum.E_BUSINESS else (self._created_at, self._modified_at)
         )
         return type(self)(
             pomodoros=cloned_pomodoros,

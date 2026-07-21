@@ -138,12 +138,7 @@ class TodoItemModel:
         """Build a fully initialized TODO item with sensible default values."""
         now = datetime.now(UTC)
         return cls(
-            id_todo_item="",
-            id_pomodoro="",
-            label="",
-            state=TodoStateEnum.E_TODO,
-            created_at=now,
-            modified_at=now,
+            id_todo_item="", id_pomodoro="", label="", state=TodoStateEnum.E_TODO, created_at=now, modified_at=now
         )
 
     def mark_as_created(self) -> None:

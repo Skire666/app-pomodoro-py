@@ -20,9 +20,7 @@ class IPomodoroService(Protocol):
         ...
 
     def list_all(
-        self,
-        name_filter: str = "",
-        sort_mode: PomodoroSortModeEnum = PomodoroSortModeEnum.E_UNSET,
+        self, name_filter: str = "", sort_mode: PomodoroSortModeEnum = PomodoroSortModeEnum.E_UNSET
     ) -> tuple[PomodoroModel, ...]:
         """List pomodoros filtered and sorted per the list screen rules (spec §2.1).
 
@@ -62,17 +60,17 @@ class IPomodoroService(Protocol):
         """
         ...
 
-    def delete(self, id_pomodoro: str, *, has_active_session: bool) -> ValidationResult:
+    def delete(self, id_pomodoro: str) -> ValidationResult:
         """Delete a pomodoro and its associated TODO items (spec §3.4).
+
+        Deletion is always allowed, regardless of whether a session is
+        currently running, paused, or stopped for this pomodoro.
 
         Args:
             id_pomodoro: Identifier of the pomodoro to delete.
-            has_active_session: True if a session is currently running on
-                this pomodoro; deletion is then blocked.
 
         Returns:
-            A successful ValidationResult once deleted, or a failed one if
-            deletion is blocked by an active session.
+            A successful ValidationResult once deleted.
         """
         ...
 

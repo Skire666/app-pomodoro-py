@@ -40,10 +40,7 @@ class TodoListView(QWidget):
     """
 
     def __init__(
-        self,
-        app_state: AppStateModel,
-        object_name: str = DEFAULT_OBJECT_NAME,
-        parent: QWidget | None = None,
+        self, app_state: AppStateModel, object_name: str = DEFAULT_OBJECT_NAME, parent: QWidget | None = None
     ) -> None:
         """Build the list's widgets and its undo-toast timer.
 
@@ -81,12 +78,7 @@ class TodoListView(QWidget):
         self._table_view.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self._table_view, 1)
 
-        self._new_item_edit = QLineEdit()
-        self._new_item_edit.setObjectName("new_item_edit")
-        self._new_item_edit.setPlaceholderText(i18n_fra.TODO_ADD_LINE_BUTTON)
-        self._new_item_edit.returnPressed.connect(self._handle_new_item_submitted)
-        self._new_item_edit.textChanged.connect(self._handle_new_item_text_changed)
-        layout.addWidget(self._new_item_edit)
+        layout.addLayout(self._build_add_item_row())
 
         layout.addWidget(self._build_toast_widget())
 
@@ -94,6 +86,24 @@ class TodoListView(QWidget):
         self._delete_list_button.setObjectName("delete_list_button")
         self._delete_list_button.clicked.connect(self._handle_delete_list_clicked)
         layout.addWidget(self._delete_list_button)
+
+    def _build_add_item_row(self) -> QHBoxLayout:
+        """Build the new-item field and its 'Ajouter' button, side by side (spec §2.5)."""
+        add_item_layout = QHBoxLayout()
+
+        self._new_item_edit = QLineEdit()
+        self._new_item_edit.setObjectName("new_item_edit")
+        self._new_item_edit.setPlaceholderText(i18n_fra.TODO_ADD_LINE_BUTTON)
+        self._new_item_edit.returnPressed.connect(self._handle_new_item_submitted)
+        self._new_item_edit.textChanged.connect(self._handle_new_item_text_changed)
+        add_item_layout.addWidget(self._new_item_edit, 1)
+
+        self._add_item_button = QPushButton(i18n_fra.TODO_ADD_LINE_SUBMIT_BUTTON)
+        self._add_item_button.setObjectName("add_item_button")
+        self._add_item_button.clicked.connect(self._handle_new_item_submitted)
+        add_item_layout.addWidget(self._add_item_button)
+
+        return add_item_layout
 
     def _build_toast_widget(self) -> QWidget:
         """Build the 'Ligne supprimée — Annuler' toast (spec §2.5)."""

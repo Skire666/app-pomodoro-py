@@ -29,6 +29,7 @@ LIST_ACTION_START: Final[str] = "▶ Play"
 LIST_ACTION_EDIT: Final[str] = "✎ Edit"
 LIST_ACTION_DUPLICATE: Final[str] = "⧉ Copy"
 LIST_ACTION_DELETE: Final[str] = "X Del."
+LIST_DELETE_CONFIRM_TEMPLATE: Final[str] = "Supprimer définitivement le pomodoro « {name} » ?"
 
 # Pomodoro detail (spec §2.2)
 DETAIL_TAB_GENERAL: Final[str] = "Général"
@@ -36,6 +37,7 @@ DETAIL_TAB_TODO_TEMPLATE: Final[str] = "TODO ({count})"
 
 # Create/edit form (spec §2.3)
 FORM_FIELD_NAME: Final[str] = "Nom du pomodoro"
+FORM_DEFAULT_NAME: Final[str] = "Nom par défaut"
 FORM_FIELD_DURATION: Final[str] = "Durée"
 FORM_FIELD_SOUND: Final[str] = "Son"
 FORM_BUTTON_BROWSE: Final[str] = "Parcourir"
@@ -58,18 +60,12 @@ SESSION_RESET_BUTTON: Final[str] = "⟲ Reset"
 SESSION_SWITCH_CONFIRM_TEMPLATE: Final[str] = (
     'Un pomodoro est en cours ("{name}"). L\'arrêter et démarrer celui-ci ?'
 )
-SESSION_COMPLETED_NOTIFICATION_TEMPLATE: Final[str] = "✅ Pomodoro terminé — {name}"
-SESSION_COMPLETED_STATE_LABEL: Final[str] = "Terminé ✓"
-SESSION_RESTART_BUTTON: Final[str] = "Relancer"
-SESSION_BACK_TO_LIST_BUTTON: Final[str] = "Retour à la liste"
 SESSION_TODO_IN_PROGRESS_TITLE: Final[str] = "TODO en cours"
-SESSION_RESUME_PROMPT_TEMPLATE: Final[str] = (
-    'Une session interrompue a été trouvée pour "{name}". Voulez-vous la reprendre ?'
-)
 
 # TODO list (spec §2.5)
 TODO_LIST_TITLE_TEMPLATE: Final[str] = "TODO ({count})"
 TODO_ADD_LINE_BUTTON: Final[str] = "+ Ajouter une ligne"
+TODO_ADD_LINE_SUBMIT_BUTTON: Final[str] = "Ajouter"
 TODO_DELETE_LIST_BUTTON: Final[str] = "X Supprimer la liste"
 TODO_DELETE_LIST_CONFIRM_TEMPLATE: Final[str] = "Supprimer définitivement les {count} lignes de cette liste ?"
 TODO_DUPLICATE_SUFFIX: Final[str] = " (copie)"

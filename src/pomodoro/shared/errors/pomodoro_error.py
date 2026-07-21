@@ -12,7 +12,6 @@ class ErrorCodePomodoro(BaseErrorCode):
 
     POM_1001 = "Le nom est requis."
     POM_1002 = "La durée doit être supérieure à 0."
-    POM_1003 = "Arrêtez la session en cours avant de supprimer ce pomodoro."
     POM_9999 = "Erreur inconnue."
 
 

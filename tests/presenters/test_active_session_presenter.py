@@ -20,8 +20,8 @@ class FakeActiveSessionView:
         self.last_error: ValidationResult | None = None
         self.state: ActiveSessionViewState | None = None
         self.last_tick: tuple[int, bool] | None = None
-        self.completed_name: str | None = None
         self.played_sound: tuple[str, int, int, int] | None = None
+        self.sound_stopped_count = 0
         self.callbacks: dict[str, Callable[[], None]] = {}
 
     def set_enabled(self, enabled: bool) -> None:
@@ -39,13 +39,13 @@ class FakeActiveSessionView:
     def notify_tick(self, remaining_seconds: int, is_paused: bool) -> None:
         self.last_tick = (remaining_seconds, is_paused)
 
-    def notify_completed(self, name: str) -> None:
-        self.completed_name = name
-
     def play_completion_sound(
         self, sound_path: str, volume: int, repeat_count: int, repeat_interval_seconds: int
     ) -> None:
         self.played_sound = (sound_path, volume, repeat_count, repeat_interval_seconds)
+
+    def stop_completion_sound(self) -> None:
+        self.sound_stopped_count += 1
 
     def bind_tick_requested(self, callback: Callable[[], None]) -> None:
         self.callbacks["tick_requested"] = callback
@@ -61,12 +61,6 @@ class FakeActiveSessionView:
 
     def bind_reset_clicked(self, callback: Callable[[], None]) -> None:
         self.callbacks["reset_clicked"] = callback
-
-    def bind_restart_clicked(self, callback: Callable[[], None]) -> None:
-        self.callbacks["restart_clicked"] = callback
-
-    def bind_back_to_list_clicked(self, callback: Callable[[], None]) -> None:
-        self.callbacks["back_to_list_clicked"] = callback
 
 
 def _start_session(config_repository: FakeConfigRepository, *, duration_seconds: int = 1500) -> str:
@@ -163,7 +157,7 @@ def test_reset_clicked_restores_the_full_planned_duration(config_repository: Fak
     assert view.last_tick[0] == 1500
 
 
-def test_tick_past_the_planned_duration_completes_the_session_and_plays_sound(
+def test_tick_past_the_planned_duration_starts_the_alarm_without_completing(
     config_repository: FakeConfigRepository,
 ) -> None:
     view = FakeActiveSessionView()
@@ -175,10 +169,95 @@ def test_tick_past_the_planned_duration_completes_the_session_and_plays_sound(
 
     view.callbacks["tick_requested"]()
 
-    assert view.completed_name == "Sprint deep work"
     assert view.played_sound is not None
     assert view.played_sound[0] == "son_cloche.mp3"
-    assert session_service.get_active() is None
+    assert session_service.get_active() is not None
+
+
+def test_tick_keeps_counting_into_the_negative_past_completion(config_repository: FakeConfigRepository) -> None:
+    view = FakeActiveSessionView()
+    session_service = SessionService(config_repository)
+    _start_session(config_repository, duration_seconds=60)
+    presenter = ActiveSessionPresenter(view, session_service, PomodoroService(config_repository))
+    presenter.show()
+    _expire_active_session(duration_seconds=60)
+
+    view.callbacks["tick_requested"]()
+
+    assert view.last_tick is not None
+    assert view.last_tick[0] < 0
+
+
+def test_further_ticks_past_completion_do_not_replay_the_alarm(config_repository: FakeConfigRepository) -> None:
+    view = FakeActiveSessionView()
+    session_service = SessionService(config_repository)
+    _start_session(config_repository, duration_seconds=60)
+    presenter = ActiveSessionPresenter(view, session_service, PomodoroService(config_repository))
+    presenter.show()
+    _expire_active_session(duration_seconds=60)
+    view.callbacks["tick_requested"]()
+    view.played_sound = None
+
+    view.callbacks["tick_requested"]()
+
+    assert view.played_sound is None
+
+
+def test_pause_clicked_while_ringing_silences_the_alarm_and_pauses(
+    config_repository: FakeConfigRepository,
+) -> None:
+    view = FakeActiveSessionView()
+    session_service = SessionService(config_repository)
+    _start_session(config_repository, duration_seconds=60)
+    presenter = ActiveSessionPresenter(view, session_service, PomodoroService(config_repository))
+    presenter.show()
+    _expire_active_session(duration_seconds=60)
+    view.callbacks["tick_requested"]()
+
+    view.callbacks["pause_clicked"]()
+
+    assert view.sound_stopped_count == 1
+    active = session_service.get_active()
+    assert active is not None
+    assert active.is_paused is True
+
+
+def test_reset_clicked_while_ringing_silences_the_alarm_and_restores_the_full_duration(
+    config_repository: FakeConfigRepository,
+) -> None:
+    view = FakeActiveSessionView()
+    session_service = SessionService(config_repository)
+    _start_session(config_repository, duration_seconds=60)
+    presenter = ActiveSessionPresenter(view, session_service, PomodoroService(config_repository))
+    presenter.show()
+    _expire_active_session(duration_seconds=60)
+    view.callbacks["tick_requested"]()
+
+    view.callbacks["reset_clicked"]()
+
+    assert view.sound_stopped_count == 1
+    assert view.last_tick is not None
+    assert view.last_tick[0] == 60
+
+
+def test_edit_clicked_while_ringing_silences_the_alarm_and_still_forwards_the_id(
+    config_repository: FakeConfigRepository,
+) -> None:
+    view = FakeActiveSessionView()
+    session_service = SessionService(config_repository)
+    id_pomodoro = _start_session(config_repository, duration_seconds=60)
+    presenter = ActiveSessionPresenter(view, session_service, PomodoroService(config_repository))
+    presenter.show()
+    _expire_active_session(duration_seconds=60)
+    view.callbacks["tick_requested"]()
+    requested: list[str] = []
+    presenter.bind_edit_requested(requested.append)
+
+    view.callbacks["edit_clicked"]()
+
+    assert view.sound_stopped_count == 1
+    assert session_service.get_active() is not None
+    assert requested == [id_pomodoro]
 
 
 def test_edit_clicked_forwards_the_id_to_the_registered_callback(config_repository: FakeConfigRepository) -> None:
@@ -192,35 +271,6 @@ def test_edit_clicked_forwards_the_id_to_the_registered_callback(config_reposito
     view.callbacks["edit_clicked"]()
 
     assert requested == [id_pomodoro]
-
-
-def test_restart_clicked_starts_a_new_session_for_the_same_pomodoro(
-    config_repository: FakeConfigRepository,
-) -> None:
-    view = FakeActiveSessionView()
-    session_service = SessionService(config_repository)
-    id_pomodoro = _start_session(config_repository, duration_seconds=60)
-    presenter = ActiveSessionPresenter(view, session_service, PomodoroService(config_repository))
-    presenter.show()
-    _expire_active_session(duration_seconds=60)
-    view.callbacks["tick_requested"]()
-
-    view.callbacks["restart_clicked"]()
-
-    active = session_service.get_active()
-    assert active is not None
-    assert active.id_pomodoro == id_pomodoro
-
-
-def test_back_to_list_clicked_forwards_to_the_registered_callback(config_repository: FakeConfigRepository) -> None:
-    view = FakeActiveSessionView()
-    presenter = ActiveSessionPresenter(view, SessionService(config_repository), PomodoroService(config_repository))
-    calls: list[None] = []
-    presenter.bind_back_to_list_requested(lambda: calls.append(None))
-
-    view.callbacks["back_to_list_clicked"]()
-
-    assert len(calls) == 1
 
 
 # EOF

@@ -29,8 +29,8 @@ from pomodoro.models.pomodoro_model import PomodoroModel
 from pomodoro.shared import i18n_fra
 from pomodoro.shared.validation_result import ValidationResult
 
-FIELD_CHANGE_DEBOUNCE_MS: Final[int] = 400
-SAVED_INDICATOR_DURATION_MS: Final[int] = 3000
+FIELD_CHANGE_DEBOUNCE_MS: Final[int] = 150
+SAVED_INDICATOR_DURATION_MS: Final[int] = 1500
 SECONDS_PER_HOUR: Final[int] = 3600
 SECONDS_PER_MINUTE: Final[int] = 60
 VOLUME_PERCENT_MAX: Final[int] = 100
@@ -136,7 +136,7 @@ class PomodoroEditView(QWidget):
         repeat_layout = QHBoxLayout()
         repeat_layout.addWidget(QLabel(i18n_fra.FORM_FIELD_REPEAT))
         self._repeat_count_spin = self._add_labeled_spinbox(
-            repeat_layout, 1, 10, i18n_fra.FORM_REPEAT_COUNT_SUFFIX
+            repeat_layout, 1, 50, i18n_fra.FORM_REPEAT_COUNT_SUFFIX
         )
         self._repeat_interval_spin = self._add_labeled_spinbox(
             repeat_layout, 1, 600, i18n_fra.FORM_REPEAT_INTERVAL_SUFFIX

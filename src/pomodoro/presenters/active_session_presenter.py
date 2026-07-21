@@ -29,9 +29,8 @@ class ActiveSessionPresenter:
         self._pomodoro_service = pomodoro_service
         self._logger = logging.getLogger(self.__class__.__name__)
         self._id_pomodoro: str | None = None
-        self._on_completed: Callable[[str], None] | None = None
+        self._is_ringing = False
         self._on_edit_requested: Callable[[str], None] | None = None
-        self._on_back_to_list: Callable[[], None] | None = None
         self._wire_view()
 
     def _wire_view(self) -> None:
@@ -41,25 +40,10 @@ class ActiveSessionPresenter:
         self._view.bind_play_clicked(self._handle_play_clicked)
         self._view.bind_pause_clicked(self._handle_pause_clicked)
         self._view.bind_reset_clicked(self._handle_reset_clicked)
-        self._view.bind_restart_clicked(self._handle_restart_clicked)
-        self._view.bind_back_to_list_clicked(self._handle_back_to_list_clicked)
-
-    def bind_completed(self, callback: Callable[[str], None]) -> None:
-        """Register the callback invoked once the session completes naturally.
-
-        Args:
-            callback: Invoked with the completed pomodoro's name, so the
-                composition root can raise a desktop notification (spec §3.2).
-        """
-        self._on_completed = callback
 
     def bind_edit_requested(self, callback: Callable[[str], None]) -> None:
         """Register the callback invoked when the user requests to edit the pomodoro."""
         self._on_edit_requested = callback
-
-    def bind_back_to_list_requested(self, callback: Callable[[], None]) -> None:
-        """Register the callback invoked when 'Retour à la liste' is clicked."""
-        self._on_back_to_list = callback
 
     def show(self) -> None:
         """Load the currently active session into the view (spec §2.4)."""
@@ -68,6 +52,7 @@ class ActiveSessionPresenter:
             self._view.notify_error(ValidationResult.error(ErrorCodeApp.APP_9999))
             return
         self._id_pomodoro = session.id_pomodoro
+        self._is_ringing = False
         now = datetime.now(UTC)
         self._view.notify_refresh(
             ActiveSessionViewState(
@@ -77,6 +62,7 @@ class ActiveSessionPresenter:
                 is_paused=session.is_paused,
             )
         )
+        self._maybe_start_ringing(session, now)
 
     def _handle_tick(self) -> None:
         """React to the view's once-a-second timer (spec §2.4, view-owned QTimer)."""
@@ -85,15 +71,19 @@ class ActiveSessionPresenter:
             return
         now = datetime.now(UTC)
         self._view.notify_tick(session.remaining_seconds(now), session.is_paused)
-        if session.is_complete(now):
-            self._handle_natural_completion(session)
+        self._maybe_start_ringing(session, now)
 
-    def _handle_natural_completion(self, session: ActiveSessionModel) -> None:
-        """Finish a session that reached 00:00:00: sound, history, and UI state (spec §2.4)."""
-        pomodoro = self._pomodoro_service.get(session.id_pomodoro)
-        result = self._session_service.complete()
-        if not result.is_valid:
+    def _maybe_start_ringing(self, session: ActiveSessionModel, now: datetime) -> None:
+        """Start the completion alarm the first time the countdown reaches 00:00:00.
+
+        The countdown then keeps counting into the negative (spec §2.4): the
+        screen stays put and the alarm just plays until the user acts on it
+        (`stop_ringing`) or it exhausts its own repeat count.
+        """
+        if self._is_ringing or session.is_paused or not session.is_complete(now):
             return
+        self._is_ringing = True
+        pomodoro = self._pomodoro_service.get(session.id_pomodoro)
         if pomodoro is not None and pomodoro.sound_path is not None:
             self._view.play_completion_sound(
                 pomodoro.sound_path,
@@ -101,18 +91,36 @@ class ActiveSessionPresenter:
                 pomodoro.sound_repeat_count,
                 pomodoro.sound_repeat_interval_seconds,
             )
-        name = pomodoro.name if pomodoro is not None else session.name_snapshot
-        self._view.notify_completed(name)
-        if self._on_completed is not None:
-            self._on_completed(name)
+
+    def stop_ringing(self) -> None:
+        """Silence an in-progress alarm (spec §2.4 'coupe le minuteur').
+
+        Used both when the user acts on the running screen while the alarm
+        rings (Edit/Play/Pause/Reset) and when another pomodoro is started
+        over this one (session-switch confirmation): either way, only the
+        alarm sound needs cutting off, nothing else changes.
+        """
+        if self._is_ringing:
+            self._view.stop_completion_sound()
+            self._is_ringing = False
 
     def _handle_edit_clicked(self) -> None:
-        """Forward an 'Edit' click to whichever presenter owns editing."""
+        """Forward an 'Edit' click to whichever presenter owns editing.
+
+        Also silences a ringing alarm first, so leaving for the edit screen
+        never leaves the sound running unattended in the background.
+        """
+        self.stop_ringing()
         if self._id_pomodoro is not None and self._on_edit_requested is not None:
             self._on_edit_requested(self._id_pomodoro)
 
     def _handle_play_clicked(self) -> None:
-        """Resume the paused session and refresh the display immediately."""
+        """Resume the paused session and refresh the display immediately.
+
+        Also silences a ringing alarm in the same click (spec §2.4 'coupe
+        le minuteur'): the user should not have to click twice.
+        """
+        self.stop_ringing()
         result = self._session_service.resume()
         if not result.is_valid:
             self._view.notify_error(result)
@@ -120,7 +128,12 @@ class ActiveSessionPresenter:
         self._refresh_display()
 
     def _handle_pause_clicked(self) -> None:
-        """Pause the running session and refresh the display immediately."""
+        """Pause the running session and refresh the display immediately.
+
+        Also silences a ringing alarm in the same click (spec §2.4 'coupe
+        le minuteur'): the user should not have to click twice.
+        """
+        self.stop_ringing()
         result = self._session_service.pause()
         if not result.is_valid:
             self._view.notify_error(result)
@@ -128,7 +141,12 @@ class ActiveSessionPresenter:
         self._refresh_display()
 
     def _handle_reset_clicked(self) -> None:
-        """Reset the countdown to the full duration, keeping the running/paused state."""
+        """Reset the countdown to the full duration, keeping the running/paused state.
+
+        Also silences a ringing alarm in the same click (spec §2.4 'coupe
+        le minuteur'): the user should not have to click twice.
+        """
+        self.stop_ringing()
         result = self._session_service.reset()
         if not result.is_valid:
             self._view.notify_error(result)
@@ -142,21 +160,6 @@ class ActiveSessionPresenter:
             return
         now = datetime.now(UTC)
         self._view.notify_tick(session.remaining_seconds(now), session.is_paused)
-
-    def _handle_restart_clicked(self) -> None:
-        """Restart the same pomodoro from the 'Terminé ✓' state (spec §2.4 'Relancer')."""
-        if self._id_pomodoro is None:
-            return
-        result = self._session_service.start(self._id_pomodoro)
-        if not result.is_valid:
-            self._view.notify_error(result)
-            return
-        self.show()
-
-    def _handle_back_to_list_clicked(self) -> None:
-        """Forward a 'Retour à la liste' click to whichever presenter owns navigation."""
-        if self._on_back_to_list is not None:
-            self._on_back_to_list()
 
 
 # EOF

@@ -2,8 +2,12 @@ from collections.abc import Callable
 
 from pomodoro.models.pomodoro_edit_view_state import PomodoroEditViewState
 from pomodoro.models.pomodoro_model import PomodoroModel
-from pomodoro.presenters.pomodoro_edit_presenter import PomodoroEditPresenter
+from pomodoro.presenters.pomodoro_edit_presenter import (
+    DEFAULT_NEW_POMODORO_DURATION_SECONDS,
+    PomodoroEditPresenter,
+)
 from pomodoro.services.pomodoro_service import PomodoroService
+from pomodoro.shared import i18n_fra
 from pomodoro.shared.errors.pomodoro_error import ErrorCodePomodoro
 from pomodoro.shared.errors.sound_error import ErrorCodeSound
 from pomodoro.shared.validation_result import ValidationResult
@@ -88,6 +92,8 @@ def test_start_create_generates_an_id_and_loads_a_default_pomodoro(
     assert view.cleared is True
     assert view.loaded is not None
     assert view.loaded.id_pomodoro == ""
+    assert view.loaded.name == i18n_fra.FORM_DEFAULT_NAME
+    assert view.loaded.duration_seconds == DEFAULT_NEW_POMODORO_DURATION_SECONDS
 
 
 def test_field_changed_before_start_is_a_no_op(config_repository: FakeConfigRepository) -> None:

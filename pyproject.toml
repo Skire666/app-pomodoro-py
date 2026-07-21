@@ -154,9 +154,9 @@ preview = true
 
 # Individual rules to disable despite the families enabled above.
 ignore = [
-    "D104",    # Missing docstring in public package (empty __init__.py tolerated)
-    "D100",    # Missing docstring at module level (relaxed for simple modules)
-    "PLR6301", # no-self-use: Protocol implementations and Qt overrides must stay instance methods
+    "undocumented-public-package",    # Missing docstring in public package (empty __init__.py tolerated)
+    "undocumented-public-module",    # Missing docstring at module level (relaxed for simple modules)
+    "no-self-use", # no-self-use: Protocol implementations and Qt overrides must stay instance methods
 ]
 
 [tool.ruff.lint.flake8-annotations]
@@ -209,21 +209,21 @@ max-nested-blocks = 4  # default: 5
 [tool.ruff.lint.per-file-ignores]
 
 # In test files, docstrings are optional and literal expected values are the norm.
-"tests/**" = ["D", "PLR2004"]
+"tests/**" = ["D", "magic-value-comparison"]
 
 # ICsvView is a wide (but segregated) contract: the Protocol and the concrete
 # view exceed the default public-method budget by design.
-"src/pomodoro/interfaces/i_csv_view.py" = ["PLR0904"]
-"src/pomodoro/views/csv_view.py" = ["PLR0904"]
+"src/pomodoro/interfaces/i_csv_view.py" = ["too-many-public-methods"]
+"src/pomodoro/views/csv_view.py" = ["too-many-public-methods"]
 
 # The composition root assembles every object exactly once (AGENTS.md §9):
 # it is intentionally one long, flat function with many locals, and each
 # cross-presenter closure it defines counts as one mccabe branch.
-"src/pomodoro/main.py" = ["PLR0914", "PLR0915", "C901"]
+"src/pomodoro/main.py" = ["too-many-locals", "too-many-statements", "complex-structure"]
 
 # Qt virtual method overrides (paintEvent, mousePressEvent, rowCount, data, ...)
 # use Qt's camelCase convention rather than PEP 8 snake_case, per AGENTS.md §16.6.
-"src/pomodoro/views/**" = ["N802"]
+"src/pomodoro/views/**" = ["invalid-function-name"]
 
 # -----------------------------------------------------------------------------
 # Basedpyright — Static Type Checking

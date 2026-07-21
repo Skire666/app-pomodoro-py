@@ -110,15 +110,16 @@ class ActiveSessionModel:
         return self._accumulated_seconds + int((now - self._last_resumed_at).total_seconds())
 
     def remaining_seconds(self, now: datetime) -> int:
-        """Return the remaining countdown time as of `now`, floored at zero.
+        """Return the remaining countdown time as of `now`.
 
         Args:
             now: The current time, injected for deterministic testing.
 
         Returns:
-            The remaining seconds before this session completes.
+            The remaining seconds before this session completes, negative
+            once the planned duration has elapsed (spec §2.4 overtime alarm).
         """
-        return max(0, self._planned_duration_seconds - self.elapsed_seconds(now))
+        return self._planned_duration_seconds - self.elapsed_seconds(now)
 
     def is_complete(self, now: datetime) -> bool:
         """Return True if this session has reached its planned duration."""

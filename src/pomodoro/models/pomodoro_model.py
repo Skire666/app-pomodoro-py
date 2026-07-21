@@ -140,15 +140,7 @@ class PomodoroModel:
     @property
     def fieldnames(self) -> tuple[str, ...]:
         """Names of every persisted field, in declaration order."""
-        return (
-            "id_pomodoro",
-            "name",
-            "duration_seconds",
-            "sound",
-            "created_at",
-            "modified_at",
-            "last_used_at",
-        )
+        return ("id_pomodoro", "name", "duration_seconds", "sound", "created_at", "modified_at", "last_used_at")
 
     def validate(self, context: object | None = None) -> ValidationResult:
         """Validate the pomodoro against the business rules of spec §2.3.

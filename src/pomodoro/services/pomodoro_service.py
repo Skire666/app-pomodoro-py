@@ -12,7 +12,6 @@ from pomodoro.models.app_config_model import AppConfigModel
 from pomodoro.models.pomodoro_model import PomodoroModel
 from pomodoro.shared.enums.copy_mode_enum import CopyModeEnum
 from pomodoro.shared.enums.pomodoro_sort_mode_enum import PomodoroSortModeEnum
-from pomodoro.shared.errors.pomodoro_error import ErrorCodePomodoro
 from pomodoro.shared.validation_result import ValidationResult
 
 
@@ -30,9 +29,7 @@ class PomodoroService:
         return str(uuid.uuid4())
 
     def list_all(
-        self,
-        name_filter: str = "",
-        sort_mode: PomodoroSortModeEnum = PomodoroSortModeEnum.E_UNSET,
+        self, name_filter: str = "", sort_mode: PomodoroSortModeEnum = PomodoroSortModeEnum.E_UNSET
     ) -> tuple[PomodoroModel, ...]:
         """List pomodoros filtered and sorted per the list screen rules (spec §2.1)."""
         return AppConfigModel.instance().pomodoros.search(name_filter, sort_mode)
@@ -88,20 +85,20 @@ class PomodoroService:
         self._persist()
         return clone
 
-    def delete(self, id_pomodoro: str, *, has_active_session: bool) -> ValidationResult:
+    def delete(self, id_pomodoro: str) -> ValidationResult:
         """Delete a pomodoro and its associated TODO items (spec §3.4).
+
+        Deletion is always allowed, regardless of whether a session is
+        currently running, paused, or stopped for this pomodoro: an active
+        session keeps running off its own frozen snapshot and does not
+        depend on the pomodoro definition still existing.
 
         Args:
             id_pomodoro: Identifier of the pomodoro to delete.
-            has_active_session: True if a session is currently running on
-                this pomodoro; deletion is then blocked.
 
         Returns:
-            A successful ValidationResult once deleted, or a failed one if
-            deletion is blocked by an active session.
+            A successful ValidationResult once deleted.
         """
-        if has_active_session:
-            return ValidationResult.error(ErrorCodePomodoro.POM_1003)
         config = AppConfigModel.instance()
         config.todos.delete_for_pomodoro(id_pomodoro)
         config.pomodoros.delete(id_pomodoro)

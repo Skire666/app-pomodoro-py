@@ -10,16 +10,7 @@ from typing import Final
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
-from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QLabel,
-    QMessageBox,
-    QProgressBar,
-    QPushButton,
-    QStackedWidget,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
 from pomodoro.models.active_session_view_state import ActiveSessionViewState
 from pomodoro.shared import i18n_fra
@@ -32,12 +23,17 @@ VOLUME_PERCENT_MAX: Final[int] = 100
 
 
 def format_countdown(remaining_seconds: int) -> str:
-    """Format a countdown as MM:SS, or HH:MM:SS once at least one hour remains (spec §2.4)."""
-    hours, remainder = divmod(remaining_seconds, SECONDS_PER_HOUR)
+    """Format a countdown as MM:SS, or HH:MM:SS once at least one hour remains (spec §2.4).
+
+    Once the planned duration has elapsed, `remaining_seconds` goes negative
+    (spec §2.4 overtime alarm) and is rendered with a leading '-'.
+    """
+    sign = "-" if remaining_seconds < 0 else ""
+    hours, remainder = divmod(abs(remaining_seconds), SECONDS_PER_HOUR)
     minutes, seconds = divmod(remainder, SECONDS_PER_MINUTE)
     if hours > 0:
-        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-    return f"{minutes:02d}:{seconds:02d}"
+        return f"{sign}{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{sign}{minutes:02d}:{seconds:02d}"
 
 
 class ActiveSessionView(QWidget):
@@ -73,44 +69,30 @@ class ActiveSessionView(QWidget):
         self._build_shortcuts()
 
     def _build_ui(self, todo_list_view: QWidget) -> None:
-        """Lay out the running page and the completed page."""
+        """Lay out the countdown, progress bar, action row, and TODO list."""
         layout = QVBoxLayout(self)
-        self._stack = QStackedWidget()
-        self._stack.setObjectName("stack")
-        self._running_page = self._build_running_page(todo_list_view)
-        self._completed_page = self._build_completed_page()
-        self._stack.addWidget(self._running_page)
-        self._stack.addWidget(self._completed_page)
-        layout.addWidget(self._stack, 1)
-
-    def _build_running_page(self, todo_list_view: QWidget) -> QWidget:
-        """Build the countdown, progress bar, action row, and TODO list."""
-        page = QWidget()
-        page.setObjectName("running_page")
-        page_layout = QVBoxLayout(page)
 
         self._name_label = QLabel()
         self._name_label.setObjectName("name_label")
         self._name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        page_layout.addWidget(self._name_label)
+        layout.addWidget(self._name_label)
 
         self._countdown_label = QLabel()
         self._countdown_label.setObjectName("countdown_label")
         self._countdown_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        page_layout.addWidget(self._countdown_label)
+        layout.addWidget(self._countdown_label)
 
         self._progress_bar = QProgressBar()
         self._progress_bar.setObjectName("progress_bar")
         self._progress_bar.setTextVisible(False)
-        page_layout.addWidget(self._progress_bar)
+        layout.addWidget(self._progress_bar)
 
-        page_layout.addLayout(self._build_action_row())
+        layout.addLayout(self._build_action_row())
 
         todo_label = QLabel(i18n_fra.SESSION_TODO_IN_PROGRESS_TITLE)
         todo_label.setObjectName("todo_label")
-        page_layout.addWidget(todo_label)
-        page_layout.addWidget(todo_list_view, 1)
-        return page
+        layout.addWidget(todo_label)
+        layout.addWidget(todo_list_view, 1)
 
     def _build_action_row(self) -> QHBoxLayout:
         """Build the Edit/Play/Pause/Reset action row, left to right."""
@@ -134,34 +116,6 @@ class ActiveSessionView(QWidget):
         buttons_layout.addWidget(self._reset_button)
 
         return buttons_layout
-
-    def _build_completed_page(self) -> QWidget:
-        """Build the 'Terminé ✓' state with its 'Relancer'/'Retour' actions."""
-        page = QWidget()
-        page.setObjectName("completed_page")
-        page_layout = QVBoxLayout(page)
-
-        self._completed_name_label = QLabel()
-        self._completed_name_label.setObjectName("completed_name_label")
-        self._completed_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        page_layout.addWidget(self._completed_name_label)
-
-        completed_label = QLabel(i18n_fra.SESSION_COMPLETED_STATE_LABEL)
-        completed_label.setObjectName("completed_label")
-        completed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        page_layout.addWidget(completed_label)
-
-        buttons_layout = QHBoxLayout()
-        self._restart_button = QPushButton(i18n_fra.SESSION_RESTART_BUTTON)
-        self._restart_button.setObjectName("restart_button")
-        buttons_layout.addWidget(self._restart_button)
-
-        self._back_to_list_button = QPushButton(i18n_fra.SESSION_BACK_TO_LIST_BUTTON)
-        self._back_to_list_button.setObjectName("back_to_list_button")
-        buttons_layout.addWidget(self._back_to_list_button)
-        page_layout.addLayout(buttons_layout)
-        page_layout.addStretch(1)
-        return page
 
     def _build_shortcuts(self) -> None:
         """Wire 'Espace' to toggle Play/Pause while this screen is active (spec §3.3)."""
@@ -201,7 +155,6 @@ class ActiveSessionView(QWidget):
         self._name_label.clear()
         self._countdown_label.clear()
         self._progress_bar.setValue(0)
-        self._stack.setCurrentWidget(self._running_page)
 
     def notify_refresh(self, context: ActiveSessionViewState) -> None:
         """Display `context`'s current values when the session is first shown."""
@@ -209,7 +162,6 @@ class ActiveSessionView(QWidget):
         self._planned_duration_seconds = context.planned_duration_seconds
         self._progress_bar.setRange(0, max(1, context.planned_duration_seconds))
         self._update_countdown(context.remaining_seconds, is_paused=context.is_paused)
-        self._stack.setCurrentWidget(self._running_page)
         self._tick_timer.start()
 
     def notify_tick(self, remaining_seconds: int, is_paused: bool) -> None:
@@ -220,16 +172,10 @@ class ActiveSessionView(QWidget):
         """Refresh the countdown label, progress bar, and Play/Pause enabled state."""
         self._is_paused = is_paused
         self._countdown_label.setText(format_countdown(remaining_seconds))
-        elapsed = max(0, self._planned_duration_seconds - remaining_seconds)
+        elapsed = min(self._planned_duration_seconds, max(0, self._planned_duration_seconds - remaining_seconds))
         self._progress_bar.setValue(elapsed)
         self._play_button.setEnabled(is_paused)
         self._pause_button.setEnabled(not is_paused)
-
-    def notify_completed(self, name: str) -> None:
-        """Switch to the 'Terminé ✓' state for the completed pomodoro `name`."""
-        self._tick_timer.stop()
-        self._completed_name_label.setText(name)
-        self._stack.setCurrentWidget(self._completed_page)
 
     def play_completion_sound(
         self, sound_path: str, volume: int, repeat_count: int, repeat_interval_seconds: int
@@ -253,6 +199,12 @@ class ActiveSessionView(QWidget):
         self._media_player.play()
         if self._sound_remaining_plays > 0:
             QTimer.singleShot(self._sound_repeat_interval_ms, self._play_next_repeat)
+
+    def stop_completion_sound(self) -> None:
+        """Silence the completion alarm immediately and cancel any pending repetition."""
+        self._sound_remaining_plays = 0
+        if self._media_player is not None:
+            self._media_player.stop()
 
     def _emit_edit_clicked(self) -> None:
         """Notify the presenter that 'Edit' was clicked."""
@@ -283,14 +235,6 @@ class ActiveSessionView(QWidget):
     def bind_reset_clicked(self, callback: Callable[[], None]) -> None:
         """Register the callback fired when '⟲ Reset' is clicked."""
         self._reset_button.clicked.connect(callback)
-
-    def bind_restart_clicked(self, callback: Callable[[], None]) -> None:
-        """Register the callback fired when 'Relancer' is clicked."""
-        self._restart_button.clicked.connect(callback)
-
-    def bind_back_to_list_clicked(self, callback: Callable[[], None]) -> None:
-        """Register the callback fired when 'Retour à la liste' is clicked."""
-        self._back_to_list_button.clicked.connect(callback)
 
 
 # EOF

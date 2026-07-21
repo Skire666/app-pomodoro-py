@@ -37,8 +37,8 @@ from pomodoro.views.todo_list_view import TodoListView
 
 CONFIG_FILE_PATH = Path("config-pomodoro.json")
 LOG_DIRECTORY = Path("tmp_app_logs")
-MAIN_WINDOW_INITIAL_WIDTH = 1024
-MAIN_WINDOW_INITIAL_HEIGHT = 720
+MAIN_WINDOW_INITIAL_WIDTH = 848
+MAIN_WINDOW_INITIAL_HEIGHT = 450
 DEFAULT_FONT_POINT_SIZE = 12
 
 
@@ -122,15 +122,20 @@ def _wire_navigation(
 def _wire_session(  # foqa: EPI025 -- composition root wiring, AGENTS.md §9
     *,
     main_window: MainWindowView,
-    tray_icon: QSystemTrayIcon,
     session_service: SessionService,
     pomodoro_list_presenter: PomodoroListPresenter,
     detail_presenter: PomodoroDetailPresenter,
     session_todo_list_presenter: TodoListPresenter,
     session_presenter: ActiveSessionPresenter,
     start_edit: Callable[[str], None],
-) -> None:
-    """Wire the 'Démarrer'/switch/completion flows for the active session (spec §2.4)."""
+) -> Callable[[str], None]:
+    """Wire the 'Démarrer'/switch flows for the active session (spec §2.4).
+
+    Returns:
+        The 'show an already-started session' callback, reused by `main()`
+        to restore the screen (and scope its embedded TODO list) for a
+        session still active from a previous run.
+    """
 
     def _show_session(id_pomodoro: str) -> None:
         session_todo_list_presenter.show_for_pomodoro(id_pomodoro)
@@ -147,6 +152,7 @@ def _wire_session(  # foqa: EPI025 -- composition root wiring, AGENTS.md §9
             answer = QMessageBox.question(main_window, i18n_fra.DIALOG_CONFIRM_TITLE, message)
             if answer != QMessageBox.StandardButton.Yes:
                 return
+            session_presenter.stop_ringing()
             session_service.stop_interrupted()
         result = session_service.start(id_pomodoro)
         if not result.is_valid:
@@ -156,44 +162,10 @@ def _wire_session(  # foqa: EPI025 -- composition root wiring, AGENTS.md §9
         pomodoro_list_presenter.refresh()
         _show_session(id_pomodoro)
 
-    def _handle_completed(name: str) -> None:
-        pomodoro_list_presenter.refresh()
-        message = i18n_fra.SESSION_COMPLETED_NOTIFICATION_TEMPLATE.format(name=name)
-        tray_icon.showMessage(i18n_fra.APP_WINDOW_TITLE, message, QSystemTrayIcon.MessageIcon.Information)
-
-    def _handle_back_to_list() -> None:
-        pomodoro_list_presenter.refresh()
-        main_window.show_pomodoros_area()
-
     pomodoro_list_presenter.bind_start_requested(_start_session)
     detail_presenter.bind_start_requested(_start_session)
-    session_presenter.bind_completed(_handle_completed)
     session_presenter.bind_edit_requested(start_edit)
-    session_presenter.bind_back_to_list_requested(_handle_back_to_list)
-
-
-def _recover_interrupted_session(
-    main_window: MainWindowView, session_service: SessionService, session_todo_list_presenter: TodoListPresenter
-) -> None:
-    """Offer to resume or cancel a session interrupted by an unexpected shutdown (spec §3.4).
-
-    Freezes a still-"running" session at its last persisted checkpoint
-    before asking, so an unknown closure duration is never silently
-    counted against the countdown. If resumed, the session's TODO list is
-    pre-loaded so the caller only has to switch the main window to it.
-    """
-    active = session_service.get_active()
-    if active is None:
-        return
-    if not active.is_paused:
-        active.pause(active.modified_at)
-    message = i18n_fra.SESSION_RESUME_PROMPT_TEMPLATE.format(name=active.name_snapshot)
-    answer = QMessageBox.question(main_window, i18n_fra.DIALOG_CONFIRM_TITLE, message)
-    if answer != QMessageBox.StandardButton.Yes:
-        session_service.stop_interrupted()
-        return
-    session_service.resume()
-    session_todo_list_presenter.show_for_pomodoro(active.id_pomodoro)
+    return _show_session
 
 
 def main() -> int:  # foqa: EPI025 -- composition root assembles every layer once, AGENTS.md §9
@@ -205,7 +177,7 @@ def main() -> int:  # foqa: EPI025 -- composition root assembles every layer onc
     _configure_logging()
     app = QApplication(sys.argv)
     _configure_font(app)
-    tray_icon = _build_tray_icon(app)
+    _build_tray_icon(app)
 
     config_repository = ConfigRepository(CONFIG_FILE_PATH)
     AppConfigModel.set_instance(config_repository.load())
@@ -224,12 +196,8 @@ def main() -> int:  # foqa: EPI025 -- composition root assembles every layer onc
     session_todo_list_view = TodoListView(app_state, "session_todo_list_view")
     session_todo_list_presenter = TodoListPresenter(session_todo_list_view, todo_service)
 
-    def _is_session_active_for(id_pomodoro: str) -> bool:
-        active = session_service.get_active()
-        return active is not None and active.id_pomodoro == id_pomodoro
-
     pomodoro_list_view = PomodoroListView()
-    pomodoro_list_presenter = PomodoroListPresenter(pomodoro_list_view, pomodoro_service, _is_session_active_for)
+    pomodoro_list_presenter = PomodoroListPresenter(pomodoro_list_view, pomodoro_service)
 
     detail_view = PomodoroDetailView(detail_todo_list_view)
     detail_presenter = PomodoroDetailPresenter(detail_view, pomodoro_service, todo_service)
@@ -254,9 +222,8 @@ def main() -> int:  # foqa: EPI025 -- composition root assembles every layer onc
         history_presenter=history_presenter,
         start_edit=start_edit,
     )
-    _wire_session(
+    show_session = _wire_session(
         main_window=main_window,
-        tray_icon=tray_icon,
         session_service=session_service,
         pomodoro_list_presenter=pomodoro_list_presenter,
         detail_presenter=detail_presenter,
@@ -266,10 +233,6 @@ def main() -> int:  # foqa: EPI025 -- composition root assembles every layer onc
     )
 
     pomodoro_list_presenter.refresh()
-    _recover_interrupted_session(main_window, session_service, session_todo_list_presenter)
-    if session_service.get_active() is not None:
-        session_presenter.show()
-        main_window.show_session()
 
     main_window.resize(MAIN_WINDOW_INITIAL_WIDTH, MAIN_WINDOW_INITIAL_HEIGHT)
     main_window.show()

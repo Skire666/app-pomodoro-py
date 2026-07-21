@@ -108,9 +108,7 @@ class PomodoroCollectionModel:
         return before - len(self._items)
 
     def search(
-        self,
-        name_filter: str = "",
-        sort_mode: PomodoroSortModeEnum = PomodoroSortModeEnum.E_UNSET,
+        self, name_filter: str = "", sort_mode: PomodoroSortModeEnum = PomodoroSortModeEnum.E_UNSET
     ) -> tuple[PomodoroModel, ...]:
         """Filter and sort pomodoros per the list screen rules (spec §2.1).
 
