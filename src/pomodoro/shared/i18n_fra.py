@@ -60,7 +60,7 @@ SESSION_RESET_BUTTON: Final[str] = "⟲ Reset"
 SESSION_SWITCH_CONFIRM_TEMPLATE: Final[str] = (
     'Un pomodoro est en cours ("{name}"). L\'arrêter et démarrer celui-ci ?'
 )
-SESSION_TODO_IN_PROGRESS_TITLE: Final[str] = "TODO en cours"
+SESSION_TODO_IN_PROGRESS_TITLE: Final[str] = "\nListe des TODO (clique droit pour changer l'état)"
 
 # TODO list (spec §2.5)
 TODO_LIST_TITLE_TEMPLATE: Final[str] = "TODO ({count})"

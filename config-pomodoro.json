@@ -2,32 +2,18 @@
   "pomodoros": {
     "items": [
       {
-        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
-        "name": "drgdfgdfg",
-        "duration_seconds": 1500,
-        "sound": {
-          "path": "C:/Users/Luzeur7692/Downloads/lesiakower-reverby-notification-sound-246407.mp3",
-          "volume": 80,
-          "repeat_count": 1,
-          "repeat_interval_seconds": 10
-        },
-        "created_at": "2026-07-21T13:41:15.245189+00:00",
-        "modified_at": "2026-07-21T20:33:59.113307+00:00",
-        "last_used_at": "2026-07-21T20:33:57.615346+00:00"
-      },
-      {
-        "id_pomodoro": "6cfb6e83-7afb-4e46-b37a-b5698254f5b9",
+        "id_pomodoro": "2674ffdd-b36b-40a7-99c4-721afd80b007",
         "name": "Nom par défaut",
-        "duration_seconds": 300,
+        "duration_seconds": 2700,
         "sound": {
-          "path": null,
+          "path": "E:/app-pomodoro-py/ress/lesiakower-reverby-notification-sound.mp3",
           "volume": 80,
-          "repeat_count": 1,
-          "repeat_interval_seconds": 10
+          "repeat_count": 10,
+          "repeat_interval_seconds": 15
         },
-        "created_at": "2026-07-21T15:26:18.336714+00:00",
-        "modified_at": "2026-07-21T20:33:54.692091+00:00",
-        "last_used_at": null
+        "created_at": "2026-07-21T21:16:02.504847+00:00",
+        "modified_at": "2026-07-21T21:16:23.601742+00:00",
+        "last_used_at": "2026-07-21T21:16:23.601722+00:00"
       }
     ],
     "created_at": "2026-07-21T12:25:00.651249+00:00",
@@ -40,126 +26,6 @@
   },
   "pomodoro_history": {
     "items": [
-      {
-        "id_history_entry": "401ff45a-bfea-4130-9e20-a188b73e970a",
-        "id_pomodoro": "2c4fc4e3-fe55-4de0-b23d-5eb4a594418f",
-        "name_snapshot": "gggggggggggg",
-        "executed_at": "2026-07-21T12:33:51.115119+00:00",
-        "planned_duration_seconds": 1500,
-        "status": "INTERRUPTED"
-      },
-      {
-        "id_history_entry": "574d7da9-6e26-4b99-9c0f-227cf702a5ca",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "drgdfgdfg",
-        "executed_at": "2026-07-21T13:09:21.443027+00:00",
-        "planned_duration_seconds": 1500,
-        "status": "INTERRUPTED"
-      },
-      {
-        "id_history_entry": "c0e8028f-7e63-4a44-a24f-151af5b5cf0f",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "drgdfgdfg",
-        "executed_at": "2026-07-21T13:10:19.305160+00:00",
-        "planned_duration_seconds": 1500,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "1a115555-7c9a-4faf-89f3-714f58905f69",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "drgdfgdfg",
-        "executed_at": "2026-07-21T13:38:22.563188+00:00",
-        "planned_duration_seconds": 1500,
-        "status": "INTERRUPTED"
-      },
-      {
-        "id_history_entry": "b17319cb-dc19-4765-93ea-65cb414ade61",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "drgdfgdfg",
-        "executed_at": "2026-07-21T13:41:01.137312+00:00",
-        "planned_duration_seconds": 1500,
-        "status": "INTERRUPTED"
-      },
-      {
-        "id_history_entry": "5126908c-f7f6-4ff1-8293-27fbcb2206db",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T14:43:23.921051+00:00",
-        "planned_duration_seconds": 70,
-        "status": "INTERRUPTED"
-      },
-      {
-        "id_history_entry": "072d1e38-6b0b-4811-9eb3-af1537376741",
-        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
-        "name_snapshot": "drgdfgdfg",
-        "executed_at": "2026-07-21T14:43:43.281559+00:00",
-        "planned_duration_seconds": 1500,
-        "status": "INTERRUPTED"
-      },
-      {
-        "id_history_entry": "6c50f8ff-44b5-45d3-8450-d4ce4de44ddd",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T14:43:45.351635+00:00",
-        "planned_duration_seconds": 10,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "1ea2a3f8-5e21-4073-bc41-e0461806e186",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T14:44:26.070873+00:00",
-        "planned_duration_seconds": 10,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "26ba32e7-d9a2-45d2-9cc4-61fda57ff8a6",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T14:44:44.478781+00:00",
-        "planned_duration_seconds": 5,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "398c9c9c-053b-43ee-b276-2e23eb158759",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T14:56:34.774507+00:00",
-        "planned_duration_seconds": 5,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "d5a5e2d9-4c39-4b71-b200-79c18a4f87e6",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T15:15:56.100913+00:00",
-        "planned_duration_seconds": 5,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "279e3adf-ee13-4667-944e-1d095e268511",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T15:16:30.318206+00:00",
-        "planned_duration_seconds": 5,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "b7b69300-9d2b-471a-885f-d4c4c3283ca7",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T15:20:55.101698+00:00",
-        "planned_duration_seconds": 5,
-        "status": "COMPLETED"
-      },
-      {
-        "id_history_entry": "d815d5b9-973e-4af8-9b41-145d774cbaa0",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T15:21:22.857600+00:00",
-        "planned_duration_seconds": 5,
-        "status": "COMPLETED"
-      },
       {
         "id_history_entry": "c91e3485-825f-4cf4-bb24-79587955e427",
         "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
@@ -199,6 +65,126 @@
         "executed_at": "2026-07-21T15:27:26.073141+00:00",
         "planned_duration_seconds": 5,
         "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "cb1d9094-8196-49e2-9b88-8d851666bb66",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T20:33:57.615346+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "4fc9ed8b-12f4-4acb-8f14-a1469868db67",
+        "id_pomodoro": "6cfb6e83-7afb-4e46-b37a-b5698254f5b9",
+        "name_snapshot": "Nom par défaut",
+        "executed_at": "2026-07-21T20:39:24.098869+00:00",
+        "planned_duration_seconds": 300,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "c11b2f97-e0a4-47e6-aca0-ce85be695e9c",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T20:39:41.458573+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "ed5afcd0-32fa-4d50-816c-341b27e5861f",
+        "id_pomodoro": "6cfb6e83-7afb-4e46-b37a-b5698254f5b9",
+        "name_snapshot": "Nom par défaut",
+        "executed_at": "2026-07-21T20:39:47.637227+00:00",
+        "planned_duration_seconds": 300,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "f2160e68-63b1-4411-9ac7-18b8b5a562c9",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T20:39:51.780676+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "3a090c84-d7c8-4882-9c0a-8c92fb0aa8c1",
+        "id_pomodoro": "6cfb6e83-7afb-4e46-b37a-b5698254f5b9",
+        "name_snapshot": "Nom par défaut",
+        "executed_at": "2026-07-21T20:55:59.254969+00:00",
+        "planned_duration_seconds": 300,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "1d8678be-2468-4e93-988b-ce1745c3cbef",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T20:56:06.022606+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "2592cce4-ba4b-48d7-b1be-f6d75186262c",
+        "id_pomodoro": "6cfb6e83-7afb-4e46-b37a-b5698254f5b9",
+        "name_snapshot": "Nom par défaut",
+        "executed_at": "2026-07-21T20:56:11.366948+00:00",
+        "planned_duration_seconds": 300,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "4be3f67f-3d97-44c5-89be-3f7c802c5d12",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T20:58:53.655258+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "4fe8b4eb-8daf-4c93-8399-e4a63a0afbcd",
+        "id_pomodoro": "6cfb6e83-7afb-4e46-b37a-b5698254f5b9",
+        "name_snapshot": "Nom par défaut",
+        "executed_at": "2026-07-21T20:58:57.266134+00:00",
+        "planned_duration_seconds": 300,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "50ff20df-f794-43d0-a0e9-639dfec97f0b",
+        "id_pomodoro": "6cfb6e83-7afb-4e46-b37a-b5698254f5b9",
+        "name_snapshot": "Nom par défaut",
+        "executed_at": "2026-07-21T21:02:38.499414+00:00",
+        "planned_duration_seconds": 300,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "fece4b08-c896-4e75-bf28-605847ed7357",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T21:02:48.932112+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "10daeb2c-b84a-490f-81cc-466ae6e3954e",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T21:06:01.579716+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "71690fca-e6cb-4499-9296-1fae055586b0",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T21:07:56.049134+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "bd043278-3645-4c60-b00e-ce75e6be31d4",
+        "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
+        "name_snapshot": "drgdfgdfg",
+        "executed_at": "2026-07-21T21:08:07.904945+00:00",
+        "planned_duration_seconds": 1500,
+        "status": "INTERRUPTED"
       }
     ],
     "created_at": "2026-07-21T12:25:00.651260+00:00",
@@ -210,14 +196,14 @@
     "modified_at": "2026-07-21T12:25:00.651264+00:00"
   },
   "active_session": {
-    "id_pomodoro": "98e03502-17c2-4eee-9fd6-e59d383af9fa",
-    "name_snapshot": "drgdfgdfg",
-    "planned_duration_seconds": 1500,
+    "id_pomodoro": "2674ffdd-b36b-40a7-99c4-721afd80b007",
+    "name_snapshot": "Nom par défaut",
+    "planned_duration_seconds": 2700,
     "accumulated_seconds": 0,
     "is_paused": true,
-    "last_resumed_at": "2026-07-21T20:33:57.615346+00:00",
-    "created_at": "2026-07-21T20:33:57.615346+00:00",
-    "modified_at": "2026-07-21T20:37:28.140150+00:00"
+    "last_resumed_at": "2026-07-21T21:16:23.601722+00:00",
+    "created_at": "2026-07-21T21:16:23.601722+00:00",
+    "modified_at": "2026-07-21T21:16:53.969672+00:00"
   },
   "created_at": "2026-07-21T12:25:00.651239+00:00",
   "modified_at": "2026-07-21T12:25:00.651239+00:00"

@@ -19,8 +19,8 @@ STATE_LABELS: Final[dict[TodoStateEnum, str]] = {
     TodoStateEnum.E_CANCELLED: i18n_fra.TODO_STATE_CANCELLED,
 }
 
-_COLUMN_LABEL: Final[int] = 0
-_COLUMN_STATE: Final[int] = 1
+COLUMN_LABEL: Final[int] = 0
+COLUMN_STATE: Final[int] = 1
 _COLUMN_COUNT: Final[int] = 2
 
 
@@ -66,7 +66,7 @@ class TodoTableModel(QAbstractTableModel):
         """Return the column header text."""
         if role != Qt.ItemDataRole.DisplayRole or orientation != Qt.Orientation.Horizontal:
             return None
-        if section == _COLUMN_LABEL:
+        if section == COLUMN_LABEL:
             return i18n_fra.TODO_COLUMN_LABEL_HEADER
         return i18n_fra.TODO_COLUMN_STATE_HEADER
 
@@ -77,16 +77,16 @@ class TodoTableModel(QAbstractTableModel):
         row = self.row_at(index.row())
         if row is None:
             return None
-        if index.column() == _COLUMN_LABEL:
+        if index.column() == COLUMN_LABEL:
             return row.label
-        if index.column() == _COLUMN_STATE:
+        if index.column() == COLUMN_STATE:
             return STATE_LABELS.get(row.state, "")
         return None
 
     def flags(self, index: QModelIndex | QPersistentModelIndex) -> Qt.ItemFlag:
         """Return the item flags: the label column is editable, the state column is not."""
         base_flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
-        if index.column() == _COLUMN_LABEL:
+        if index.column() == COLUMN_LABEL:
             return base_flags | Qt.ItemFlag.ItemIsEditable
         return base_flags
 
@@ -94,7 +94,7 @@ class TodoTableModel(QAbstractTableModel):
         self, index: QModelIndex | QPersistentModelIndex, value: object, role: int = Qt.ItemDataRole.EditRole
     ) -> bool:
         """Emit `label_edited` for an inline label edit; reject anything else."""
-        if role != Qt.ItemDataRole.EditRole or index.column() != _COLUMN_LABEL:
+        if role != Qt.ItemDataRole.EditRole or index.column() != COLUMN_LABEL:
             return False
         row = self.row_at(index.row())
         if row is None or not isinstance(value, str):

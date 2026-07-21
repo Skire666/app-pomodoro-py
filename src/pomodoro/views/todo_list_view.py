@@ -25,10 +25,11 @@ from pomodoro.models.todo_row_state import TodoRowState
 from pomodoro.shared import i18n_fra
 from pomodoro.shared.enums.todo_state_enum import TodoStateEnum
 from pomodoro.shared.validation_result import ValidationResult
-from pomodoro.views.todo_table_model import STATE_LABELS, TodoTableModel
+from pomodoro.views.todo_table_model import COLUMN_LABEL, STATE_LABELS, TodoTableModel
 
 UNDO_TOAST_DURATION_MS: Final[int] = 5000
 DEFAULT_OBJECT_NAME: Final[str] = "todo_list_view"
+LABEL_COLUMN_WIDTH_PX: Final[int] = 300
 
 
 class TodoListView(QWidget):
@@ -76,6 +77,7 @@ class TodoListView(QWidget):
         self._table_view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._table_view.customContextMenuRequested.connect(self._show_context_menu)
         self._table_view.horizontalHeader().setStretchLastSection(True)
+        self._table_view.setColumnWidth(COLUMN_LABEL, LABEL_COLUMN_WIDTH_PX)
         layout.addWidget(self._table_view, 1)
 
         layout.addLayout(self._build_add_item_row())

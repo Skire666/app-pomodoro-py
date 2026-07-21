@@ -128,14 +128,8 @@ def _wire_session(  # foqa: EPI025 -- composition root wiring, AGENTS.md §9
     session_todo_list_presenter: TodoListPresenter,
     session_presenter: ActiveSessionPresenter,
     start_edit: Callable[[str], None],
-) -> Callable[[str], None]:
-    """Wire the 'Démarrer'/switch flows for the active session (spec §2.4).
-
-    Returns:
-        The 'show an already-started session' callback, reused by `main()`
-        to restore the screen (and scope its embedded TODO list) for a
-        session still active from a previous run.
-    """
+) -> None:
+    """Wire the 'Démarrer'/switch flows for the active session (spec §2.4)."""
 
     def _show_session(id_pomodoro: str) -> None:
         session_todo_list_presenter.show_for_pomodoro(id_pomodoro)
@@ -148,10 +142,11 @@ def _wire_session(  # foqa: EPI025 -- composition root wiring, AGENTS.md §9
             _show_session(id_pomodoro)
             return
         if active is not None:
-            message = i18n_fra.SESSION_SWITCH_CONFIRM_TEMPLATE.format(name=active.name_snapshot)
-            answer = QMessageBox.question(main_window, i18n_fra.DIALOG_CONFIRM_TITLE, message)
-            if answer != QMessageBox.StandardButton.Yes:
-                return
+            if not active.is_paused:
+                message = i18n_fra.SESSION_SWITCH_CONFIRM_TEMPLATE.format(name=active.name_snapshot)
+                answer = QMessageBox.question(main_window, i18n_fra.DIALOG_CONFIRM_TITLE, message)
+                if answer != QMessageBox.StandardButton.Yes:
+                    return
             session_presenter.stop_ringing()
             session_service.stop_interrupted()
         result = session_service.start(id_pomodoro)
@@ -165,7 +160,6 @@ def _wire_session(  # foqa: EPI025 -- composition root wiring, AGENTS.md §9
     pomodoro_list_presenter.bind_start_requested(_start_session)
     detail_presenter.bind_start_requested(_start_session)
     session_presenter.bind_edit_requested(start_edit)
-    return _show_session
 
 
 def main() -> int:  # foqa: EPI025 -- composition root assembles every layer once, AGENTS.md §9
@@ -189,6 +183,8 @@ def main() -> int:  # foqa: EPI025 -- composition root assembles every layer onc
     history_service = HistoryService(config_repository)
     sound_service = SoundService(sound_repository)
     session_service = SessionService(config_repository)
+    if session_service.get_active() is not None:
+        session_service.stop_interrupted()
 
     detail_todo_list_view = TodoListView(app_state, "detail_todo_list_view")
     detail_todo_list_presenter = TodoListPresenter(detail_todo_list_view, todo_service)
@@ -222,7 +218,7 @@ def main() -> int:  # foqa: EPI025 -- composition root assembles every layer onc
         history_presenter=history_presenter,
         start_edit=start_edit,
     )
-    show_session = _wire_session(
+    _wire_session(
         main_window=main_window,
         session_service=session_service,
         pomodoro_list_presenter=pomodoro_list_presenter,
