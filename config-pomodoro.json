@@ -12,8 +12,8 @@
           "repeat_interval_seconds": 15
         },
         "created_at": "2026-07-21T21:16:02.504847+00:00",
-        "modified_at": "2026-07-21T21:16:23.601742+00:00",
-        "last_used_at": "2026-07-21T21:16:23.601722+00:00"
+        "modified_at": "2026-07-22T14:24:46.484487+00:00",
+        "last_used_at": "2026-07-22T14:24:46.484458+00:00"
       }
     ],
     "created_at": "2026-07-21T12:25:00.651249+00:00",
@@ -26,14 +26,6 @@
   },
   "pomodoro_history": {
     "items": [
-      {
-        "id_history_entry": "c91e3485-825f-4cf4-bb24-79587955e427",
-        "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
-        "name_snapshot": "45 min durée",
-        "executed_at": "2026-07-21T15:23:16.582834+00:00",
-        "planned_duration_seconds": 5,
-        "status": "COMPLETED"
-      },
       {
         "id_history_entry": "1a07a1d3-0320-4bdf-99f6-83b656030a72",
         "id_pomodoro": "b302b065-2db6-4da0-8b06-29c6d4c9aeda",
@@ -185,6 +177,14 @@
         "executed_at": "2026-07-21T21:08:07.904945+00:00",
         "planned_duration_seconds": 1500,
         "status": "INTERRUPTED"
+      },
+      {
+        "id_history_entry": "cb0e2d6c-1c8a-40e2-86f1-5720262ace46",
+        "id_pomodoro": "2674ffdd-b36b-40a7-99c4-721afd80b007",
+        "name_snapshot": "Nom par défaut",
+        "executed_at": "2026-07-21T21:16:23.601722+00:00",
+        "planned_duration_seconds": 2700,
+        "status": "INTERRUPTED"
       }
     ],
     "created_at": "2026-07-21T12:25:00.651260+00:00",
@@ -200,10 +200,10 @@
     "name_snapshot": "Nom par défaut",
     "planned_duration_seconds": 2700,
     "accumulated_seconds": 0,
-    "is_paused": true,
-    "last_resumed_at": "2026-07-21T21:16:23.601722+00:00",
-    "created_at": "2026-07-21T21:16:23.601722+00:00",
-    "modified_at": "2026-07-21T21:16:53.969672+00:00"
+    "is_paused": false,
+    "last_resumed_at": "2026-07-22T14:24:46.484458+00:00",
+    "created_at": "2026-07-22T14:24:46.484458+00:00",
+    "modified_at": "2026-07-22T14:24:46.484458+00:00"
   },
   "created_at": "2026-07-21T12:25:00.651239+00:00",
   "modified_at": "2026-07-21T12:25:00.651239+00:00"
